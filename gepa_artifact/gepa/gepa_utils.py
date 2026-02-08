@@ -91,8 +91,8 @@ class GEPAState:
         self.rng1 = random.Random(seed)
         self.rng2 = random.Random(seed+1)
 
-        self.prog_candidate_train_subscores = [base_trainset_eval_output[2]]
-        self.prog_candidate_val_subscores = [base_valset_eval_output[2]]
+        self.prog_candidate_train_subscores = [list(base_trainset_eval_output[2])]
+        self.prog_candidate_val_subscores = [list(base_valset_eval_output[2])]
         self.num_metric_calls_by_discovery = [0]
 
         self.running_linearized_gepa = run_linearized_gepa
