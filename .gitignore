@@ -210,3 +210,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+.idea/
+**/openevolve_output/
+**/wiki.abstracts.2017.tar.gz
+**/wiki.abstracts.2017.jsonl

@@ -1,11 +1,7 @@
 [project]
-name = "gepa_artifact"
-version = "0.0.1"
-description = "GEPA is a novel prompt optimizers that uses text feedback to improve compound AI systems."
-authors = [
-  { name = "Lakshya A Agrawal", email = "lakshyaaagrawal@berkeley.edu" }
-]
-license = { text = "MIT" }
+name = "openevolve-port"
+version = "0.1.0"
+description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -54,22 +50,6 @@ dependencies = [
     "lark",
     "sympy",
     "levenshtein",
-    "datasets==3.6.0"
-]
-
-[tool.uv.sources]
-arbor-ai = { path = "gepa_artifact/utils/arbor", editable = true }
-dspy = { path = "gepa_artifact/utils/dspy", editable = true }
-
-[tool.uv]
-no-build-isolation-package = ["flash-attn"]
-
-[[tool.uv.dependency-metadata]]
-name = "flash-attn"
-version = "2.7.4.post1"
-requires-dist = ["torch", "setuptools"]
-
-[tool.uv.workspace]
-members = [
-    "openevolve-port",
+    "datasets==3.6.0",
+    "openevolve>=0.2.26",
 ]
