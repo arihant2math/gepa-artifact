@@ -1,14 +1,51 @@
 import os
 import sys
+from functools import partial
 from pathlib import Path
 
 import dspy
+from dspy import Signature
+
+from gepa_artifact.benchmarks import dspy_program
+from gepa_artifact.benchmarks.hover.hover_program import search
 
 sys.path.append(str(Path(__file__).parent.parent))
 
 from gepa_artifact.utils.metric_logger import MetricWithLogger, CounterWithLock
 from gepa_artifact.benchmarks.hotpotQA import benchmark as hotpot_b
 from gepa_artifact.utils.capture_stream_logger import Logger
+
+class HotpotMultiHop(dspy_program.LangProBeDSPyMetaProgram, dspy.Module):
+    def __init__(self, create_query_hop2_prompt: str, final_answer_prompt: str, summarize1: str, summarize2: str):
+        super().__init__()
+        self.k = 7
+        self.retrieve_k = partial(search, k=self.k) # dspy.Retrieve(k=self.k)
+        self.create_query_hop2 = dspy.ChainOfThought(Signature("question,summary_1->query").with_instructions(create_query_hop2_prompt))
+        self.final_answer = dspy.ChainOfThought(Signature("question,summary_1,summary_2->answer").with_instructions(final_answer_prompt))
+        self.summarize1 = dspy.ChainOfThought(Signature("question,passages->summary").with_instructions(summarize1))
+        self.summarize2 = dspy.ChainOfThought(Signature("question,context,passages->summary").with_instructions(summarize2))
+
+    def forward(self, question):
+        # HOP 1
+        hop1_docs = self.retrieve_k(question).passages
+        summary_1 = self.summarize1(
+            question=question, passages=hop1_docs
+        ).summary  # Summarize top k docs
+
+        # HOP 2
+        hop2_query = self.create_query_hop2(question=question, summary_1=summary_1).query
+        hop2_docs = self.retrieve_k(hop2_query).passages
+        summary_2 = self.summarize2(
+            question=question, context=summary_1, passages=hop2_docs
+        ).summary
+
+        # HOP 3
+        hop3_answer = self.final_answer(
+            question=question, summary_1=summary_1, summary_2=summary_2
+        ).answer
+
+        return dspy.Prediction(answer=hop3_answer, hop1_docs=hop1_docs, hop2_docs=hop2_docs)
+
 
 def create_lm(lm_config: dict):
     config = lm_config.copy()
@@ -25,7 +62,7 @@ def create_lm(lm_config: dict):
 
 
 lm_for_optimizer = create_lm({
-    'model': 'openai/gpt-4-mini',
+    'model': 'openai/gpt-5',
     'temperature': 1
 })
 adapter = dspy.settings.adapter  # if "qwen" not in lm_name else XMLAdapter()
@@ -34,10 +71,29 @@ dspy.configure(lm=lm_for_optimizer, adapter=adapter)
 def evaluate(prompt_path):
     # Read prompt
     text = open(prompt_path, "r").read()
+    #     def __init__(self, create_query_hop2_prompt: str, final_answer_prompt: str, summarize1: str, summarize2: str):
+    prompts = {"create_query_hop2": None, "final_answer_prompt": None, "summarize1": None, "summarize2": None}
+    lines = text.splitlines()
+    current_prompt = None
+    for line in lines:
+        if line.startswith(">>> PROMPT_START"):
+            line = line.removeprefix(">>> PROMPT_START").strip()
+            current_prompt = line
+            continue
+        if current_prompt is None:
+            return {
+                "combined_score": 0.0,
+                "error": "Incorrectly formatted prompt list",
+                "prompt_length": len(text)
+            }
+        if prompts[current_prompt] is None:
+            prompts[current_prompt] = []
+        prompts[current_prompt].append(line)
 
     benchmark_meta = hotpot_b[0]
+    benchmark_meta.program = HotpotMultiHop("\n".join(prompts["create_query_hop2"]), "\n".join(prompts["final_answer_prompt"]), "\n".join(prompts["summarize1"]), "\n".join(prompts["summarize2"]))
     benchmark = benchmark_meta.benchmark()
-    final_eval_set = benchmark.test_set
+    final_eval_set = benchmark.test_set[:5]
     metric_counter = CounterWithLock()
     # optimizers = get_optimizers()
     # opt_idx = 4  # GEPA
@@ -65,8 +121,8 @@ def evaluate(prompt_path):
             return_outputs=True
         )
         score, outputs = evaluate_prog(program)
-        print(score, outputs)
+        # print(score)
         return {
-            "combined_score": score,
+            "combined_score": score / 100,
             "prompt_length": len(text)
         }
