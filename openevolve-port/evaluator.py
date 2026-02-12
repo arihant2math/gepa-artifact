@@ -227,4 +227,4 @@ def evaluate(prompt_path):
         )
 
 if __name__ == "__main__":
-    print(evaluate("test-prompt.txt"))
+    print(evaluate("initial_prompt.txt"))
