@@ -51,8 +51,8 @@ database:
   archive_size: 100
   num_islands: 4
 
-  feature_dimensions: ["prompt_lengths"]
-  feature_bins: 10  # 10x10 grid = 100 cells
+  feature_dimensions: ["complexity"]
+  feature_bins: 10  # 10 complexities
 
   # Selection parameters - Optimal ratios from testing
   elite_selection_ratio: 0.1   # 10% elite selection
