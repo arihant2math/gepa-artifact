@@ -106,7 +106,7 @@ def evaluate(prompt_path):
             }
 
     benchmark_meta = hotpot_b[0]
-    benchmark_meta.program = HotpotMultiHop("\n".join(prompts["create_query_hop2"]), "\n".join(prompts["final_answer"]), "\n".join(prompts["summarize1"]), "\n".join(prompts["summarize2"]))
+    benchmark_meta.program = [HotpotMultiHop("\n".join(prompts["create_query_hop2"]), "\n".join(prompts["final_answer"]), "\n".join(prompts["summarize1"]), "\n".join(prompts["summarize2"]))]
     benchmark = benchmark_meta.benchmark()
     final_eval_set = benchmark.test_set[:5]
     metric_counter = CounterWithLock()
