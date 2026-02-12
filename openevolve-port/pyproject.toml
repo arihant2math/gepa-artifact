@@ -52,4 +52,9 @@ dependencies = [
     "levenshtein",
     "datasets==3.6.0",
     "openevolve>=0.2.26",
+    "gepa-artifact"
 ]
+
+# gepa-artifact is a path dependency
+[tool.uv.sources]
+gepa-artifact = { workspace = true }

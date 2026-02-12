@@ -2,6 +2,7 @@ import os
 import sys
 from functools import partial
 from pathlib import Path
+from typing import Optional
 
 import dspy
 from dspy import Signature
@@ -72,7 +73,7 @@ def evaluate(prompt_path):
     # Read prompt
     text = open(prompt_path, "r").read()
     #     def __init__(self, create_query_hop2_prompt: str, final_answer_prompt: str, summarize1: str, summarize2: str):
-    prompts = {"create_query_hop2": None, "final_answer_prompt": None, "summarize1": None, "summarize2": None}
+    prompts: dict[str, Optional[list[str]]] = {"create_query_hop2": None, "final_answer": None, "summarize1": None, "summarize2": None}
     lines = text.splitlines()
     current_prompt = None
     for line in lines:
@@ -83,15 +84,29 @@ def evaluate(prompt_path):
         if current_prompt is None:
             return {
                 "combined_score": 0.0,
-                "error": "Incorrectly formatted prompt list",
+                "error": "Incorrectly formatted prompt list (missing initial >>> PROMPT_START)",
+                "prompt_length": len(text)
+            }
+        if current_prompt not in prompts:
+            return {
+                "combined_score": 0.0,
+                "error": f"Prompt \"{current_prompt}\" is not one of the possible prompts: {list(prompts.keys())}",
                 "prompt_length": len(text)
             }
         if prompts[current_prompt] is None:
             prompts[current_prompt] = []
         prompts[current_prompt].append(line)
 
+    for name, prompt in prompts.items():
+        if prompt is None:
+            return {
+                "combined_score": 0.0,
+                "error": f"No prompt for {name}",
+                "prompt_length": len(text)
+            }
+
     benchmark_meta = hotpot_b[0]
-    benchmark_meta.program = HotpotMultiHop("\n".join(prompts["create_query_hop2"]), "\n".join(prompts["final_answer_prompt"]), "\n".join(prompts["summarize1"]), "\n".join(prompts["summarize2"]))
+    benchmark_meta.program = HotpotMultiHop("\n".join(prompts["create_query_hop2"]), "\n".join(prompts["final_answer"]), "\n".join(prompts["summarize1"]), "\n".join(prompts["summarize2"]))
     benchmark = benchmark_meta.benchmark()
     final_eval_set = benchmark.test_set[:5]
     metric_counter = CounterWithLock()
@@ -126,3 +141,6 @@ def evaluate(prompt_path):
             "combined_score": score / 100,
             "prompt_length": len(text)
         }
+
+if __name__ == "__main__":
+    print(evaluate("test-prompt.txt"))

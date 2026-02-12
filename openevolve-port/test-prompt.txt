@@ -1,1 +1,8 @@
-Answer the question correctly.
+>>> PROMPT_START create_query_hop2
+Given the fields `question`, `summary_2`, produce the fields `query`.
+>>> PROMPT_START summarize1
+Given the fields `question`, `passages`, produce the fields `summary`.
+>>> PROMPT_START summarize2
+Given the fields `question`, `context`, `passages`, produce the fields `summary`.
+>>> PROMPT_START final_answer
+Given the fields `question`, `summary_1`, `summary_2`, produce the fields `answer`.
