@@ -63,7 +63,7 @@ def create_lm(lm_config: dict):
 
 
 lm_for_optimizer = create_lm({
-    'model': 'openai/gpt-5',
+    'model': 'openai/gpt-4.1-mini',
     'temperature': 1
 })
 adapter = dspy.settings.adapter  # if "qwen" not in lm_name else XMLAdapter()
@@ -108,7 +108,7 @@ def evaluate(prompt_path):
     benchmark_meta = hotpot_b[0]
     benchmark_meta.program = [HotpotMultiHop("\n".join(prompts["create_query_hop2"]), "\n".join(prompts["final_answer"]), "\n".join(prompts["summarize1"]), "\n".join(prompts["summarize2"]))]
     benchmark = benchmark_meta.benchmark()
-    final_eval_set = benchmark.test_set[:5]
+    final_eval_set = benchmark.test_set
     metric_counter = CounterWithLock()
     # optimizers = get_optimizers()
     # opt_idx = 4  # GEPA
