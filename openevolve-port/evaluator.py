@@ -85,13 +85,13 @@ def evaluate(prompt_path):
             return {
                 "combined_score": 0.0,
                 "error": "Incorrectly formatted prompt list (missing initial >>> PROMPT_START)",
-                "prompt_length": len(text)
+                "prompt_lengths": {}
             }
         if current_prompt not in prompts:
             return {
                 "combined_score": 0.0,
                 "error": f"Prompt \"{current_prompt}\" is not one of the possible prompts: {list(prompts.keys())}",
-                "prompt_length": len(text)
+                "prompt_lengths": {}
             }
         if prompts[current_prompt] is None:
             prompts[current_prompt] = []
@@ -102,7 +102,7 @@ def evaluate(prompt_path):
             return {
                 "combined_score": 0.0,
                 "error": f"No prompt for {name}",
-                "prompt_length": len(text)
+                "prompt_lengths": {}
             }
 
     benchmark_meta = hotpot_b[0]
@@ -139,7 +139,7 @@ def evaluate(prompt_path):
         # print(score)
         return {
             "combined_score": score / 100,
-            "prompt_length": len(text)
+            "prompt_length": {k: len("\n".join(v)) for k,v in prompts.items()}
         }
 
 if __name__ == "__main__":

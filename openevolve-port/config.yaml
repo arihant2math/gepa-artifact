@@ -51,7 +51,7 @@ database:
   archive_size: 100
   num_islands: 4
 
-  feature_dimensions: ["prompt_length"]
+  feature_dimensions: ["prompt_lengths"]
   feature_bins: 10  # 10x10 grid = 100 cells
 
   # Selection parameters - Optimal ratios from testing
