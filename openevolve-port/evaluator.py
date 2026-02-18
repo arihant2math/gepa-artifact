@@ -1,22 +1,20 @@
+from functools import partial
+import os
 from pathlib import Path
-
 import sys
 
 import dspy
 from dspy import Signature
 
-sys.path.append(str(Path(__file__).parent.parent))
-
-from gepa_artifact.benchmarks.hotpotQA import benchmark as hotpot_b
-
 from openevolve.evaluation_result import EvaluationResult
 
 from litellm import completion
-import os
-from functools import partial
 
 import bm25s
 import Stemmer
+
+sys.path.append(str(Path(__file__).parent.parent))
+from gepa_artifact.benchmarks.hotpotQA import benchmark as hotpot_b
 
 
 class DotDict(dict):
@@ -270,7 +268,6 @@ def evaluate(prompt_path):
     program = HotpotSingleHop(prompt)
     evaluate_prog = dspy.Evaluate(
         devset=final_eval_set,
-        metric=metric_fn_with_logger,
         num_threads=4,
         display_progress=True,
         max_errors=len(final_eval_set) * 10,
