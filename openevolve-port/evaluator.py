@@ -107,7 +107,13 @@ Final answer: {{final_answer_output}}
 
 def generate_feedback(questions, logs, outputs):
     feedbacks = []
+    count = 0
     for question, log, output in zip(questions, logs, outputs):
+        if count > 5:
+            break
+        if output[2]:
+            continue
+        count += 1
         prompt = generate_feedback_prompt(question, log)
         response = completion(model="openai/gpt-4.1-mini", messages=[{"role": "user", "content": prompt}])
         feedbacks.append((log["question"], response.choices[0].message.content))
@@ -187,7 +193,7 @@ def evaluate(prompt_path):
     benchmark_meta = hotpot_b[0]
     benchmark_meta.program = [HotpotMultiHop("\n".join(prompts["create_query_hop2"]), "\n".join(prompts["final_answer"]), "\n".join(prompts["summarize1"]), "\n".join(prompts["summarize2"]))]
     benchmark = benchmark_meta.benchmark()
-    final_eval_set = benchmark.test_set[10:20]
+    final_eval_set = benchmark.test_set
     metric_counter = CounterWithLock()
     # optimizers = get_optimizers()
     # opt_idx = 4  # GEPA
