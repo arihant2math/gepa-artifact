@@ -42,9 +42,6 @@ prompt:
 
     The revised prompt should maintain the same input interface but be more effective, reliable, and production-ready for LLM use.
 
-    Return only the improved prompts in the specified format. Do not include explanations or additional comments. Your output should be a clean, high-quality replacement that enhances clarity, consistency, and LLM performance.
-    All prompts must start with >>> PROMPT_START {prompt_name}. The names of the prompts remain constant and should not change.
-
 # Database Configuration
 database:
   population_size: 1000
